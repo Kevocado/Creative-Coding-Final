@@ -141,7 +141,7 @@ function preload(){ //preloads all the scenes
 	timerSound = loadSound('assets/sounds/timer2.mp3')
 	utopiaMusic = loadSound('assets/sounds/utopia_music.mp3');
 	dystopiaMusic = loadSound('assets/sounds/dystopia_music.mp3');
-	scenes = {
+	scenes = { // object that stores all the scene data and pre loads all data needed using information below
 		Q0: {//Introduction
 			backgroundImage: loadImage('assets/photos/landing_page.webp'),
 			textColor: '#FFFFFF'
@@ -152,110 +152,78 @@ function preload(){ //preloads all the scenes
 		},
 		Q2: {
 			backgroundImage: loadImage('assets/photos/Q2.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q3: {
 			backgroundImage: loadImage('assets/photos/Q3.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q4: {
 			backgroundImage: loadImage('assets/photos/Q4.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q5: {
 			backgroundImage: loadImage('assets/photos/Q5.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q6: {
 			backgroundImage: loadImage('assets/photos/Q6.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q7: {
 			backgroundImage: loadImage('assets/photos/Q7.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q8: {
 			backgroundImage: loadImage('assets/photos/Q8.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q9: {
 			backgroundImage: loadImage('assets/photos/Q9.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q10: {
 			backgroundImage: loadImage('assets/photos/Q10.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q11: {
 			backgroundImage: loadImage('assets/photos/Q11.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q12: {
 			backgroundImage: loadImage('assets/photos/Q12.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		Q13: {
 			backgroundImage: loadImage('assets/photos/Q13.webp'),
-			
-			
 			textColor: '#FFFFFF'
 		},
 		UT_AI: {
 			gifPath:'assets/photos/UT_AI.gif',
-			
-			
 			textColor: '#FFFFFF'
 		},
 		UT_DEM: {
 			gifPath:'assets/photos/UT_DEM.gif',
-			
-			
+
 			textColor: '#FFFFFF'
 		},
 		UT_ECO: {
 			gifPath:'assets/photos/UT_ECO.gif',
-			
-			
+
 			textColor: '#FFFFFF'
 		},
 		UT_SCI: {
 			gifPath:'assets/photos/UT_SCI.gif',
-			
-			
+	
 			textColor: '#FFFFFF'
 		},
 		UT_SPACE: {
 			gifPath:'assets/photos/UT_SPACE.gif',
-			
-			
+
 			textColor: '#FFFFFF'
 		},
 		DT_AI: {
 			gifPath:'assets/photos/DT_AI.gif',
-			
-			
 			textColor: '#FFFFFF'
 		},
 		DT_ECO: {
@@ -304,10 +272,10 @@ function showLandingPage() {
 	canvas.parent('canvas-wrapper'); 
 	textAlign(CENTER, CENTER);
 	textSize(20);
-	voice = new p5.Speech();
+	voice = new p5.Speech(); // initilizes new speech object
 	voice.synth = window.speechSynthesis;
 	print(voice.listVoices());
-	voice.setPitch(0.6); 
+	voice.setPitch(0.6); // settings for voice
 	voice.setRate(0.9); 
 	voice.setVolume(1);
 	setTimeout(() => {
@@ -324,8 +292,6 @@ function showLandingPage() {
   }
   
   function draw() {
-	//background(0); // Default background in case no scene is loaded
-
 	if (!gameStarted) {
 		showLandingPage();
 		return;
@@ -351,7 +317,7 @@ function showLandingPage() {
 		speakSceneOnce(decisionTree[scene].text);
 		questionStartTime = millis(); // reset timer
 	
-		loadScene(scenes[decisionTree[scene].scene]); // ✅ move here
+		loadScene(scenes[decisionTree[scene].scene]); 
 	}
 	// Display the current node's text
 	fill(currentScene?.textColor || 255); // Use scene-specific text color or default to white
@@ -406,14 +372,12 @@ function showLandingPage() {
 	}
   }
   function mousePressed() {
-	if(!gameStarted && (mouseX > width / 2 - 40 && mouseX < width / 2 + 40 &&
+	if(!gameStarted && (mouseX > width / 2 - 40 && mouseX < width / 2 + 40 && // game start button
 		mouseY > height / 2 - 40 && mouseY < height / 2 + 40)){
 			gameStarted = true;
-			voice.speak("Welcome...");
 			currentSpokenScene = null;
 			return;
 		}
-	
 	if ( //restart
 		mouseX > width / 2 - 50 && mouseX < width / 2 + 50 &&
 		mouseY > height / 2 + 280 && mouseY < height / 2 + 310 &&
@@ -427,19 +391,19 @@ function showLandingPage() {
 	}
 	if (mouseX > width / 2 - 50 && mouseX < width / 2 + 50 && mouseY > height / 2 + 330 && mouseY < height / 2 + 370 &&
 		!decisionTree[scene].yes &&
-		decisionTree[scene].videoUrl
+		decisionTree[scene].videoUrl 
 	) {
-		window.open(decisionTree[scene].videoUrl, '_blank');
+		window.open(decisionTree[scene].videoUrl, '_blank'); //opens link to watch trailer in new tab
 		return;
 	}
 	if (!decisionTree[scene].yes) return;
   
 	// Yes button
 	if (
-	  mouseX > width / 2 - 150 && mouseX < width / 2 - 50 &&
+	  mouseX > width / 2 - 150 && mouseX < width / 2 - 50 &&// checks if in area
 	  mouseY > height / 2 + 230 && mouseY < height / 2 + 270
 	) {
-	  scene = decisionTree[scene].yes;
+	  scene = decisionTree[scene].yes;//sets the scene change and the voices
 	  tickingPlayed = false;
 	  voice.cancel();
 	if (speakTimeout) clearTimeout(speakTimeout);
@@ -447,16 +411,16 @@ function showLandingPage() {
   
 	// No button
 	if (
-	  mouseX > width / 2 + 50 && mouseX < width / 2 + 150 &&
+	  mouseX > width / 2 + 50 && mouseX < width / 2 + 150 && // checks if in area
 	  mouseY > height / 2 + 230 && mouseY < height / 2 + 270
 	) {
-	  scene = decisionTree[scene].no;
+	  scene = decisionTree[scene].no; //sets the scene change and the voices
 	  tickingPlayed = false;
 	  voice.cancel();
 	if (speakTimeout) clearTimeout(speakTimeout);
 	}
   }
-  function loadScene(sceneConfig) {
+  function loadScene(sceneConfig) { // takes the scene information from the object above and loads the different parts of the screen
 	if (currentGif) {
 	  currentGif.remove();
 	  currentGif = null;
@@ -466,8 +430,8 @@ function showLandingPage() {
 	if (sceneConfig.gifPath) {
 	  isGifScene = true;
   
-	  currentGif = createImg(sceneConfig.gifPath, 'scene gif');
-		currentGif.position(500 + windowWidth/2, 400 + windowHeight/2);
+	  currentGif = createImg(sceneConfig.gifPath, 'scene gif'); // imports gif
+		currentGif.position(windowWidth/2 + 1200 , windowHeight/2 + 800 );
 		currentGif.size(windowWidth/2, windowHeight/2);
 		currentGif.style('z-index', '0');
 		currentGif.style('position', 'absolute');
@@ -507,8 +471,5 @@ function showLandingPage() {
 	  dystopiaMusic.play(0, 1, 1, 40, 30);
 	  currentAmbientSound = dystopiaMusic;
 	}
-  
-	if (sceneConfig.font) textFont(sceneConfig.font);
-	if (sceneConfig.textColor) fill(sceneConfig.textColor);
   }
   

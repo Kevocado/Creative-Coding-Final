@@ -1,25 +1,24 @@
-//comments
-	//Less leading questions
-	//point based system asking all different questions
-	// show each ending depending 
-	// make a layered decision tree using general questions
-	// Make a distinction between the video and the game
-	//make it more edgy and scary depending on what I believe should be the different futures
-	//Indicate what direction of utopia or distopia the user goes into, each screen has a different font and style
-	//Make sure to integrate the speech and words 
-	//use videos in the background?
-	//Think about the experience 
-			//what they feel and experience
-			//MTA feedback survery that never ends
-			//make the survey 
-			//Space oddessy computer?
-	//make it weird and creepy 
-	// decribes the sound
-	// you as a player see what your life owuld be like 
-	// show different aspects of each utopia or dystopia that shows the different aspects of life from political, enviroment, education, weather, housing,
-
-
+let speakCount = 0;
+let speakTimeout;
+let voice;
 let scenes;
+let currentSpokenScene = null;
+let spokenOnce = false;
+let gameStarted = false;
+let landingImage;
+let questionStartTime = null;
+let ambientQuestionSound;
+let utopiaMusic;
+let dystopiaMusic;
+let timerSound;
+let tickingPlayed = false; 
+let currentAmbientSound = null;
+let currentGif = null;
+let isGifScene = false;
+
+
+const TIME_LIMIT = 10000; // 15 seconds in milliseconds
+
 let decisionTree = {
 	Q1: {
 	  text: "Do you believe technology should govern human decisions?",
@@ -103,201 +102,256 @@ let decisionTree = {
   
 	// Endings
 	UT_AI:    { text: "🤖 AI-Governed Utopia:\nYou are optimized. You are at peace.",
-		scene: "UT_AI"
+		scene: "UT_AI",
+		videoUrl: "https://www.youtube.com/watch?v=pU0X1_KTDgc&ab_channel=ANNAPURNA"
 	},
 	UT_ECO:   { text: "🌱 Nature-Centric Utopia:\nYou walk barefoot under digital trees.",
-		scene: "UT_ECO" },
+		scene: "UT_ECO", 
+	videoUrl: "https://www.youtube.com/watch?v=5PSNL1qE6VY" },
+
 	UT_SCI:   { text: "🔬 Transhuman Utopia:\nYou no longer age. You begin to forget pain.",
-		scene: "UT_SCI" },
+		scene: "UT_SCI",
+	videoUrl: "https://www.youtube.com/watch?v=SvBVDibOrgs" },
 	UT_DEM:   { text: "🗳️ Direct Democracy:\nEvery moment is a vote. Everyone is heard.",
-		scene: "UT_DEM" },
+		scene: "UT_DEM",
+	videoUrl:"https://www.youtube.com/watch?v=fH6B4S9ENY4&ab_channel=RottenTomatoesTrailers" },
 	UT_SPACE: { text: "🌌 Space Utopia:\nYou orbit Mars. You plant oxygen.",
-		scene: "UT_SPACE" },
+		scene: "UT_SPACE",
+	videoUrl: "https://www.youtube.com/watch?v=zSWdZVtXT7E" },
 	DT_AI:    { text: "⚠️ AI Dystopia:\nYou are obedient. But your dreams are monitored.",
-		scene: "DT_AI" },
+		scene: "DT_AI",
+	videoUrl: "https://www.youtube.com/watch?v=EoQuVnKhxaM" },
 	DT_POL:   { text: "📵 Authoritarian Rule:\nYour voice is archived. Your silence is praised.", 
-		scene: "DT_AI" },
+		scene: "DT_POL",
+	videoUrl: "https://www.youtube.com/watch?v=djx5i7nNZ-Y&ab_channel=RottenTomatoesClassicTrailers" },
 	DT_ECO:   { text: "🔥 Collapse:\nThe oceans rose. You adapted, or drowned.",
-		scene: "DT_ECO" },
+		scene: "DT_ECO",
+	videoUrl: "https://www.youtube.com/watch?v=2VT2apoX90o&ab_channel=RottenTomatoesClassicTrailers" },
 	DT_SIM:   { text: "🎮 Simulation Trap:\nYou question if you ever lived at all.",
-		scene: "DT_SIM" },
+		scene: "DT_SIM",
+	videoUrl: "https://www.youtube.com/watch?v=vKQi3bBA1y8" },
 	DT_SPACE: { text: "🚫 Cosmic Failure:\nThe stars were cold. Earth was warmer.",
-		scene: "DT_SPACE" }
+		scene: "DT_SPACE",
+	videoUrl: "https://www.youtube.com/watch?v=3MIlE9R00ik&ab_channel=MagnoliaPictures%26MagnetReleasing" }
   };
 
-function preload(){
+function preload(){ //preloads all the scenes
+	landingImage = loadImage('assets/photos/landing_page.webp');
+	ambientQuestionSound = loadSound('assets/sounds/interstellar.mp3');
+	timerSound = loadSound('assets/sounds/timer2.mp3')
+	utopiaMusic = loadSound('assets/sounds/utopia_music.mp3');
+	dystopiaMusic = loadSound('assets/sounds/dystopia_music.mp3');
 	scenes = {
 		Q0: {//Introduction
-			backgroundImage: loadImage('assets/photos/Q1.webp'),
-			//font:
-			//sound:
-			textColor: '#FFFFFF'
-		},
-		Q0_1: {//Introduction
-			backgroundImage: loadImage('assets/photos/Q1.webp'),
-			//font:
-			//sound:
+			backgroundImage: loadImage('assets/photos/landing_page.webp'),
 			textColor: '#FFFFFF'
 		},
 		Q1: {
 			backgroundImage: loadImage('assets/photos/Q1.webp'),
-			//font:
-			//sound:
 			textColor: '#FFFFFF'
 		},
 		Q2: {
 			backgroundImage: loadImage('assets/photos/Q2.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q3: {
 			backgroundImage: loadImage('assets/photos/Q3.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q4: {
 			backgroundImage: loadImage('assets/photos/Q4.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q5: {
 			backgroundImage: loadImage('assets/photos/Q5.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q6: {
 			backgroundImage: loadImage('assets/photos/Q6.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q7: {
 			backgroundImage: loadImage('assets/photos/Q7.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q8: {
 			backgroundImage: loadImage('assets/photos/Q8.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q9: {
 			backgroundImage: loadImage('assets/photos/Q9.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q10: {
 			backgroundImage: loadImage('assets/photos/Q10.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q11: {
 			backgroundImage: loadImage('assets/photos/Q11.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q12: {
 			backgroundImage: loadImage('assets/photos/Q12.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		Q13: {
 			backgroundImage: loadImage('assets/photos/Q13.webp'),
-			//font:
-			//sound:
+			
+			
 			textColor: '#FFFFFF'
 		},
 		UT_AI: {
-			backgroundImage: loadImage('assets/photos/UT_AI.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/UT_AI.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		UT_DEM: {
-			backgroundImage: loadImage('assets/photos/UT_DEM.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/UT_DEM.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		UT_ECO: {
-			backgroundImage: loadImage('assets/photos/UT_ECO.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/UT_ECO.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		UT_SCI: {
-			backgroundImage: loadImage('assets/photos/UT_SCI.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/UT_SCI.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		UT_SPACE: {
-			backgroundImage: loadImage('assets/photos/UT_SPACE.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/UT_SPACE.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		DT_AI: {
-			backgroundImage: loadImage('assets/photos/DT_AI.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/DT_AI.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		DT_ECO: {
-			backgroundImage: loadImage('assets/photos/DT_ECO.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/DT_ECO.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		DT_POL: {
-			backgroundImage: loadImage('assets/photos/DT_POL.gif'),
-			//font:
-			//sound:
+			gifPath:'assets/photos/DT_POL.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		DT_SIM: {
-			backgroundImage: loadImage('assets/photos/DT_SIM.gif'),
-			//font:
-			//sound:
+			gifPath: 'assets/photos/DT_SIM.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 		DT_SPACE: {
-			backgroundImage: loadImage('assets/photos/DT_SPACE.gif'),
-			//font:
-			//sound:
+			gifPath: 'assets/photos/DT_SPACE.gif',
+			
+			
 			textColor: '#FFFFFF'
 		},
 	}
 }
+
+function showLandingPage() {
+	if (landingImage) {
+		image(landingImage, 0, 0, width, height); // Display the preloaded landing page image
+	  } else {
+		console.error("Landing image not loaded");
+	  }
+	textSize(40);
+	text("Answer the questions before the time runs out and find out your future", width / 2, height / 2 + 100);
+	text("At the end, you can choose to restart or watch a trailer for a movie like your future!", width / 2, height / 2 + 150);
+	drawButton("Start", width / 2, height / 2 + 40);
+  }
   
   let scene = "Q1";
   
   function setup() {
-	createCanvas(windowWidth, windowHeight);
+	const canvas = createCanvas(windowWidth, windowHeight);
+	canvas.parent('canvas-wrapper'); 
 	textAlign(CENTER, CENTER);
 	textSize(20);
+	voice = new p5.Speech();
+	voice.synth = window.speechSynthesis;
+	print(voice.listVoices());
+	voice.setPitch(0.6); 
+	voice.setRate(0.9); 
+	voice.setVolume(1);
+	setTimeout(() => {
+		const voices = speechSynthesis.getVoices();
+		console.log("Voices loaded:", voices);
+		const selectedVoice = voices.find(v => v.name.includes("Google UK English Male"));
+		if (selectedVoice) {
+			voice.setVoice(selectedVoice.name);
+			console.log("Voice set to:", selectedVoice.name);
+		} else {
+			console.warn("Desired voice not found. Using default.");
+		}
+	}, 500);
   }
   
   function draw() {
-	background(30); // Default background in case no scene is loaded
-  
+	//background(0); // Default background in case no scene is loaded
+
+	if (!gameStarted) {
+		showLandingPage();
+		return;
+	}
+	if (!isGifScene) {
+		const currentSceneKey = decisionTree[scene].scene;
+		const currentScene = scenes[currentSceneKey];
+		if (currentScene && currentScene.backgroundImage) {
+		  image(currentScene.backgroundImage, 0, 0, width, height);
+		} else {
+		  background(0); // fallback
+		}
+	  }
+	
 	// Get the current scene configuration
 	const currentSceneKey = decisionTree[scene].scene;
 	const currentScene = scenes[currentSceneKey];
   
-	// Load the scene settings (background, tint, etc.)
-	if (currentScene) {
-	  loadScene(currentScene);
+	if (scene !== currentSpokenScene) {
+		currentSpokenScene = scene;
+		tickingPlayed = false;
+		spokenOnce = false;
+		speakSceneOnce(decisionTree[scene].text);
+		questionStartTime = millis(); // reset timer
+	
+		loadScene(scenes[decisionTree[scene].scene]); // ✅ move here
 	}
 	// Display the current node's text
 	fill(currentScene?.textColor || 255); // Use scene-specific text color or default to white
@@ -308,16 +362,76 @@ function preload(){
 	  drawButton("Yes", width / 2 - 100, height / 2 + 250);
 	  drawButton("No", width / 2 + 100, height / 2 + 250);
 	}
-  }
-  
-  function drawButton(label, x, y) {
+
+	if (!decisionTree[scene].yes) {
+		drawButton("Restart", width / 2, height / 2 + 300,200);
+		drawButton("Trailer", width / 2, height / 2 + 350,200);
+	}
+	if (decisionTree[scene].yes && questionStartTime !== null) {
+		const elapsed = millis() - questionStartTime;
+		const remaining = max(0, TIME_LIMIT - elapsed);
+		const barWidth = map(remaining, 0, TIME_LIMIT, 0, width);
+	
+		// Progress bar
+		noStroke();
+		fill(50);
+		rect(0, 0, width, 10);
+		fill(255, 0, 0);
+		rect(0, 0, barWidth, 10);
+	
+		if (elapsed > TIME_LIMIT && currentSpokenScene === scene) {
+			voice.cancel();
+			if (speakTimeout) clearTimeout(speakTimeout);
+	
+			const choice = random() < 0.5 ? "yes" : "no";
+			scene = decisionTree[scene][choice];
+	
+			// prevent multiple advances in same frame
+			currentSpokenScene = null;
+		}
+	}
+}
+  function drawButton(label, x, y, size = 150) {
 	fill(70);
-	rect(x - 50, y - 20, 100, 40, 10);
+	rect(x - size / 2, y - 20, size, 40, 10);
 	fill(255);
+	textAlign(CENTER, CENTER); 
 	text(label, x, y);
   }
   
+  function speakSceneOnce(text) {
+	if (voice && text) {
+	  voice.cancel(); // Stop anything else
+	  voice.speak(text);
+	}
+  }
   function mousePressed() {
+	if(!gameStarted && (mouseX > width / 2 - 40 && mouseX < width / 2 + 40 &&
+		mouseY > height / 2 - 40 && mouseY < height / 2 + 40)){
+			gameStarted = true;
+			voice.speak("Welcome...");
+			currentSpokenScene = null;
+			return;
+		}
+	
+	if ( //restart
+		mouseX > width / 2 - 50 && mouseX < width / 2 + 50 &&
+		mouseY > height / 2 + 280 && mouseY < height / 2 + 310 &&
+		!decisionTree[scene].yes
+	) {scene = "Q1";
+		currentSpokenScene = null;
+		if (currentAmbientSound && currentAmbientSound.isPlaying()) {
+			currentAmbientSound.stop();
+			currentAmbientSound = null;
+		}
+	}
+	if (mouseX > width / 2 - 50 && mouseX < width / 2 + 50 && mouseY > height / 2 + 330 && mouseY < height / 2 + 370 &&
+		!decisionTree[scene].yes &&
+		decisionTree[scene].videoUrl
+	) {
+		window.open(decisionTree[scene].videoUrl, '_blank');
+		return;
+	}
 	if (!decisionTree[scene].yes) return;
   
 	// Yes button
@@ -326,6 +440,9 @@ function preload(){
 	  mouseY > height / 2 + 230 && mouseY < height / 2 + 270
 	) {
 	  scene = decisionTree[scene].yes;
+	  tickingPlayed = false;
+	  voice.cancel();
+	if (speakTimeout) clearTimeout(speakTimeout);
 	}
   
 	// No button
@@ -334,26 +451,64 @@ function preload(){
 	  mouseY > height / 2 + 230 && mouseY < height / 2 + 270
 	) {
 	  scene = decisionTree[scene].no;
-	}
-  }  
-  
-  function loadScene(sceneConfig) {
-	
-	if (sceneConfig.backgroundImage) {
-	  let bgImage = sceneConfig.backgroundImage;
-	  if (bgImage) {
-		image(bgImage, 0, 0, width, height);
-	  }
-	}
-	if (sceneConfig.sound) {
-	  let sound = loadSound(sceneConfig.ambientSound, () => {
-		sound.loop();
-	  });
-	}
-	if (sceneConfig.font) {
-	  textFont(sceneConfig.font);
-	}
-	if (sceneConfig.textColor) {
-	  fill(sceneConfig.textColor);
+	  tickingPlayed = false;
+	  voice.cancel();
+	if (speakTimeout) clearTimeout(speakTimeout);
 	}
   }
+  function loadScene(sceneConfig) {
+	if (currentGif) {
+	  currentGif.remove();
+	  currentGif = null;
+	}
+  
+	// Handle GIF scenes
+	if (sceneConfig.gifPath) {
+	  isGifScene = true;
+  
+	  currentGif = createImg(sceneConfig.gifPath, 'scene gif');
+		currentGif.position(500 + windowWidth/2, 400 + windowHeight/2);
+		currentGif.size(windowWidth/2, windowHeight/2);
+		currentGif.style('z-index', '0');
+		currentGif.style('position', 'absolute');
+		currentGif.style('top', '0');
+		currentGif.style('left', '0');
+		currentGif.show();
+	} else {
+	  isGifScene = false;
+  
+	  if (sceneConfig.backgroundImage) {
+		image(sceneConfig.backgroundImage, 0, 0, width, height);
+	  }
+	}
+  
+	// Stop previous sound
+	if (currentAmbientSound && currentAmbientSound.isPlaying()) {
+	  currentAmbientSound.stop();
+	}
+	if (timerSound && timerSound.isPlaying()) {
+	  timerSound.stop();
+	}
+  
+	currentAmbientSound = null;
+  
+	// Ticking for questions
+	if (scene.startsWith("Q") && timerSound && timerSound.isLoaded()) {
+	  timerSound.play();
+	  tickingPlayed = true;
+	}
+  
+	// Music for endings
+	if (scene.startsWith("UT_") && utopiaMusic && utopiaMusic.isLoaded()) {
+	  utopiaMusic.play(0, 1, 1, 0, 30);
+	  currentAmbientSound = utopiaMusic;
+	}
+	if (scene.startsWith("DT_") && dystopiaMusic && dystopiaMusic.isLoaded()) {
+	  dystopiaMusic.play(0, 1, 1, 40, 30);
+	  currentAmbientSound = dystopiaMusic;
+	}
+  
+	if (sceneConfig.font) textFont(sceneConfig.font);
+	if (sceneConfig.textColor) fill(sceneConfig.textColor);
+  }
+  
